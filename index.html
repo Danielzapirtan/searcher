@@ -1,125 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Regex Web Search Simulator</title>
-<style>
-    body {
-        font-family: system-ui, sans-serif;
-        margin: 2rem;
-        background: #f5f5f5;
-    }
-    h1 {
-        font-size: 1.4rem;
-    }
-    input, button {
-        padding: 0.6rem;
-        margin: 0.3rem 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    button {
-        cursor: pointer;
-    }
-    .result {
-        background: #fff;
-        padding: 0.8rem;
-        margin-top: 0.6rem;
-        border-radius: 6px;
-    }
-    .url {
-        font-size: 0.85rem;
-        color: #555;
-        word-break: break-all;
-    }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔍 Regex Web Search · DuckDuckGo simulation</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 2rem auto;
+            max-width: 800px;
+            background: #f8fafc;
+            padding: 0 1rem;
+        }
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: #0f172a;
+            border-left: 5px solid #2563eb;
+            padding-left: 1rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.02);
+            padding: 1.8rem 2rem;
+        }
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+        label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.01em;
+            color: #334155;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+        input, button {
+            width: 100%;
+            padding: 0.9rem 1.2rem;
+            font-size: 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            background: #ffffff;
+            transition: 0.15s ease;
+        }
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+        }
+        input::placeholder {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+        button {
+            background: #0f172a;
+            color: white;
+            font-weight: 500;
+            border: none;
+            margin-top: 0.8rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        button:hover {
+            background: #1e293b;
+            transform: scale(1.01);
+        }
+        .regex-hint {
+            font-size: 0.8rem;
+            color: #475569;
+            margin-top: 0.3rem;
+            background: #f1f5f9;
+            padding: 0.3rem 1rem;
+            border-radius: 30px;
+            display: inline-block;
+        }
+        .stats {
+            font-size: 0.9rem;
+            color: #334155;
+            margin: 1.2rem 0 0.5rem 0;
+            font-weight: 500;
+        }
+        .result-list {
+            margin-top: 1.5rem;
+        }
+        .result-item {
+            background: #f9f9fc;
+            border-radius: 18px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.8rem;
+            border-left: 4px solid #2563eb;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.01);
+            transition: 0.1s;
+            word-wrap: break-word;
+        }
+        .result-item:hover {
+            background: #ffffff;
+            border-left-width: 6px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.05);
+        }
+        .result-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #0f172a;
+            margin-bottom: 0.3rem;
+        }
+        .result-url {
+            font-size: 0.8rem;
+            color: #2563eb;
+            word-break: break-all;
+            background: #eef2ff;
+            padding: 0.2rem 0.8rem;
+            border-radius: 30px;
+            display: inline-block;
+            margin-top: 0.2rem;
+        }
+        .warning, .error {
+            background: #fff8e7;
+            border-radius: 18px;
+            padding: 1.4rem;
+            text-align: center;
+            color: #b45309;
+            font-weight: 500;
+            border: 1px solid #fcd34d;
+        }
+        .error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e9eef3;
+            margin: 1.8rem 0 0.8rem 0;
+        }
+        .footer-note {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+        .example-hint {
+            background: #f0f9ff;
+            border-radius: 20px;
+            padding: 0.8rem 1.2rem;
+            margin: 1.5rem 0 0.5rem 0;
+            border: 1px dashed #7ab3e0;
+            color: #0369a1;
+        }
+        .example-hint code {
+            background: #e0f2fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+        }
+    </style>
 </head>
 <body>
+<div class="card">
+    <h1>🔎 regex · web search (live demo)</h1>
 
-<h1>Regex-Based Web Search (Simulation)</h1>
+    <div class="input-group">
+        <label>🔎 main query (keywords)</label>
+        <input id="query" type="text" placeholder="e.g. 'openai' or 'linux kernel'" value="openai" />
+    </div>
 
-<input id="query" placeholder="Search query (keywords)" />
-<input id="titleRegex" placeholder="Title regex (optional)" />
-<input id="urlRegex" placeholder="URL regex (optional)" />
-<button onclick="search()">Search</button>
+    <div class="input-group">
+        <label>📄 title regex (optional, case‑insensitive)</label>
+        <input id="titleRegex" type="text" placeholder="e.g. (chatgpt|gpt-4)" value="chatgpt" />
+        <span class="regex-hint">ⓘ try: <strong>gpt|ai|model</strong>  (no slashes needed)</span>
+    </div>
 
-<div id="results"></div>
+    <div class="input-group">
+        <label>🔗 url regex (optional)</label>
+        <input id="urlRegex" type="text" placeholder="e.g. wikipedia|openai" value="" />
+        <span class="regex-hint">ⓘ example: <strong>openai\.com</strong>  (escaped dot)</span>
+    </div>
+
+    <button onclick="search()">🚀 Execute regex search</button>
+
+    <div class="example-hint">
+        ⚡ <strong>how it works:</strong> fetches live from DuckDuckGo Instant Answer API, then filters title & URL with your regex.
+        (if no regex — only keyword search applies)
+    </div>
+
+    <hr />
+
+    <div id="results" class="result-list">
+        <div class="stats" id="statusMessage">✨ ready — click search</div>
+    </div>
+    <div class="footer-note">regex simulation · no tracking · ddg instant answer</div>
+</div>
 
 <script>
-async function search() {
-    const query = document.getElementById("query").value.trim();
-    const titlePattern = document.getElementById("titleRegex").value;
-    const urlPattern = document.getElementById("urlRegex").value;
-    const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "";
+(function() {
+    // --- UI elements
+    const queryInput = document.getElementById('query');
+    const titleInput = document.getElementById('titleRegex');
+    const urlInput = document.getElementById('urlRegex');
+    const resultsDiv = document.getElementById('results');
+    const statusEl = document.getElementById('statusMessage');
 
-    if (!query) return;
+    // make search globally available (for onclick)
+    window.search = async function search() {
+        // clear but keep structure
+        resultsDiv.innerHTML = '';
 
-    let titleRegex = null;
-    let urlRegex = null;
+        const query = queryInput.value.trim();
+        const titlePattern = titleInput.value.trim();
+        const urlPattern = urlInput.value.trim();
 
-    try {
-        if (titlePattern) titleRegex = new RegExp(titlePattern, "i");
-        if (urlPattern) urlRegex = new RegExp(urlPattern, "i");
-    } catch {
-        resultsDiv.textContent = "Invalid regular expression.";
-        return;
-    }
+        // show loading / status
+        const initialStatus = document.createElement('div');
+        initialStatus.className = 'stats';
+        initialStatus.id = 'statusMessage';
+        resultsDiv.appendChild(initialStatus);
 
-    const endpoint =
-        "https://api.duckduckgo.com/?q=" +
-        encodeURIComponent(query) +
-        "&format=json&no_redirect=1&no_html=1";
-
-    try {
-        const response = await fetch(endpoint);
-        const data = await response.json();
-
-        const items = [];
-
-        if (Array.isArray(data.RelatedTopics)) {
-            for (const item of data.RelatedTopics) {
-                if (item.Text && item.FirstURL) {
-                    items.push({
-                        title: item.Text,
-                        url: item.FirstURL
-                    });
-                }
-            }
-        }
-
-        const filtered = items.filter(item => {
-            if (titleRegex && !titleRegex.test(item.title)) return false;
-            if (urlRegex && !urlRegex.test(item.url)) return false;
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            resultsDiv.textContent = "No results matched the filters.";
+        if (!query) {
+            initialStatus.textContent = '⚠️ Please enter a search query (keywords).';
             return;
         }
 
-        for (const item of filtered) {
-            const div = document.createElement("div");
-            div.className = "result";
+        let titleRegex = null;
+        let urlRegex = null;
 
-            const title = document.createElement("div");
-            title.textContent = item.title;
-
-            const url = document.createElement("div");
-            url.className = "url";
-            url.textContent = item.url;
-
-            div.appendChild(title);
-            div.appendChild(url);
-            resultsDiv.appendChild(div);
+        // validate regex patterns (must compile)
+        try {
+            if (titlePattern) titleRegex = new RegExp(titlePattern, 'i');
+        } catch (e) {
+            initialStatus.textContent = `❌ Invalid title regex: ${e.message}`;
+            return;
         }
-    } catch {
-        resultsDiv.textContent = "Search failed.";
-    }
-}
+
+        try {
+            if (urlPattern) urlRegex = new RegExp(urlPattern, 'i');
+        } catch (e) {
+            initialStatus.textContent = `❌ Invalid URL regex: ${e.message}`;
+            return;
+        }
+
+        initialStatus.textContent = '⏳ fetching from DuckDuckGo …';
+
+        const endpoint =
+            'https://api.duckduckgo.com/?q=' +
+            encodeURIComponent(query) +
+            '&format=json&no_redirect=1&no_html=1&t=regex_sim';
+
+        try {
+            const response = await fetch(endpoint);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // clean old status (we will re-create fresh)
+            resultsDiv.innerHTML = ''; 
+
+            // extract items (robust: RelatedTopics, Abstract, Results fallback)
+            let items = [];
+
+            // 1. RelatedTopics (most useful)
+            if (Array.isArray(data.RelatedTopics)) {
+                for (const item of data.RelatedTopics) {
+                    // skip categories (expanded Topics may be in deeper)
+                    if (item.Name && Array.isArray(item.Topics)) {
+                        // extract from subtopics (DuckDuckGo structure)
+                        for (const sub of item.Topics) {
+                            if (sub.Text && sub.FirstURL) {
+                                items.push({ title: sub.Text, url: sub.FirstURL });
+                            }
+                        }
+                    } else if (item.Text && item.FirstURL) {
+                        items.push({ title: item.Text, url: item.FirstURL });
+                    }
+                }
+            }
+
+            // 2. Also include Abstract if available (often main result)
+            if (data.AbstractText && data.AbstractURL) {
+                items.push({ title: data.AbstractText, url: data.AbstractURL });
+            }
+
+            // 3. Results array (fallback)
+            if (Array.isArray(data.Results)) {
+                for (const res of data.Results) {
+                    if (res.Text && res.FirstURL) {
+                        items.push({ title: res.Text, url: res.FirstURL });
+                    }
+                }
+            }
+
+            // 4. Deduplicate by url (simple)
+            const seenUrls = new Set();
+            items = items.filter(item => {
+                if (!item.url || seenUrls.has(item.url)) return false;
+                seenUrls.add(item.url);
+                return true;
+            });
+
+            if (items.length === 0) {
+                resultsDiv.innerHTML = `<div class="warning">🌿 No results from DuckDuckGo for "${query}". Try broader keywords.</div>`;
+                return;
+            }
+
+            // apply regex filters
+            const filtered = items.filter(item => {
+                if (titleRegex && !titleRegex.test(item.title)) return false;
+                if (urlRegex && !urlRegex.test(item.url)) return false;
+                return true;
+            });
+
+            // rebuild status line
+            const newStatus = document.createElement('div');
+            newStatus.className = 'stats';
+            newStatus.id = 'statusMessage';
+            if (filtered.length === 0) {
+                newStatus.innerHTML = `🔍 ${items.length} total · <strong>0 matched</strong> regex filters.`;
+                resultsDiv.appendChild(newStatus);
+
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'warning';
+                hintDiv.innerText = 'No items passed your regex. Try less specific patterns or clear fields.';
+                resultsDiv.appendChild(hintDiv);
+                return;
+            } else {
+                newStatus.innerHTML = `✅ <strong>${filtered.length}</strong> result${filtered.length > 1 ? 's' : ''} (filtered from ${items.length}) · ${titlePattern ? 'title: /'+titlePattern+'/i ' : ''} ${urlPattern ? 'url: /'+urlPattern+'/i' : ''}`;
+                resultsDiv.appendChild(newStatus);
+            }
+
+            // render each filtered item
+            filtered.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'result-item';
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'result-title';
+                titleDiv.textContent = item.title || '(no title)';
+
+                const urlDiv = document.createElement('div');
+                urlDiv.className = 'result-url';
+                urlDiv.textContent = item.url;
+
+                itemDiv.appendChild(titleDiv);
+                itemDiv.appendChild(urlDiv);
+                resultsDiv.appendChild(itemDiv);
+            });
+
+        } catch (err) {
+            resultsDiv.innerHTML = `<div class="error">❌ Search failed — ${err.message || 'network or CORS issue'}.<br><small>Note: this demo calls a public API; if you're on a local file (file://) some browsers block fetch. Use a local server or try online.</small></div>`;
+        }
+    };
+
+    // minor: auto-run on page load with placeholder values? makes it alive.
+    // but we wait a tick to see status, then search.
+    window.addEventListener('load', function() {
+        // optional: uncomment to simulate a greeting; but better show ready.
+        // we can run default search after 300ms to show it works.
+        // but user might want to click, however immediate demo is nice.
+        // let's do it only after a tiny delay (so DOM is fully ready)
+        setTimeout(() => {
+            if (queryInput.value.trim() !== '') {
+                // run search automatically only once, just to showcase (non‑intrusive)
+                // But we'll check if results are empty and first visit.
+                if (resultsDiv.children.length <= 1) { // only status placeholder exists
+                    search();
+                }
+            }
+        }, 200);
+    });
+})();
 </script>
 
+<!-- additional note for CORS / local file explanation -->
 </body>
 </html>
