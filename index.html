@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Regex Web Search Simulator</title>
+<style>
+    body {
+        font-family: system-ui, sans-serif;
+        margin: 2rem;
+        background: #f5f5f5;
+    }
+    h1 {
+        font-size: 1.4rem;
+    }
+    input, button {
+        padding: 0.6rem;
+        margin: 0.3rem 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    button {
+        cursor: pointer;
+    }
+    .result {
+        background: #fff;
+        padding: 0.8rem;
+        margin-top: 0.6rem;
+        border-radius: 6px;
+    }
+    .url {
+        font-size: 0.85rem;
+        color: #555;
+        word-break: break-all;
+    }
+</style>
+</head>
+<body>
+
+<h1>Regex-Based Web Search (Simulation)</h1>
+
+<input id="query" placeholder="Search query (keywords)" />
+<input id="titleRegex" placeholder="Title regex (optional)" />
+<input id="urlRegex" placeholder="URL regex (optional)" />
+<button onclick="search()">Search</button>
+
+<div id="results"></div>
+
+<script>
+async function search() {
+    const query = document.getElementById("query").value.trim();
+    const titlePattern = document.getElementById("titleRegex").value;
+    const urlPattern = document.getElementById("urlRegex").value;
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    if (!query) return;
+
+    let titleRegex = null;
+    let urlRegex = null;
+
+    try {
+        if (titlePattern) titleRegex = new RegExp(titlePattern, "i");
+        if (urlPattern) urlRegex = new RegExp(urlPattern, "i");
+    } catch {
+        resultsDiv.textContent = "Invalid regular expression.";
+        return;
+    }
+
+    const endpoint =
+        "https://api.duckduckgo.com/?q=" +
+        encodeURIComponent(query) +
+        "&format=json&no_redirect=1&no_html=1";
+
+    try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+
+        const items = [];
+
+        if (Array.isArray(data.RelatedTopics)) {
+            for (const item of data.RelatedTopics) {
+                if (item.Text && item.FirstURL) {
+                    items.push({
+                        title: item.Text,
+                        url: item.FirstURL
+                    });
+                }
+            }
+        }
+
+        const filtered = items.filter(item => {
+            if (titleRegex && !titleRegex.test(item.title)) return false;
+            if (urlRegex && !urlRegex.test(item.url)) return false;
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            resultsDiv.textContent = "No results matched the filters.";
+            return;
+        }
+
+        for (const item of filtered) {
+            const div = document.createElement("div");
+            div.className = "result";
+
+            const title = document.createElement("div");
+            title.textContent = item.title;
+
+            const url = document.createElement("div");
+            url.className = "url";
+            url.textContent = item.url;
+
+            div.appendChild(title);
+            div.appendChild(url);
+            resultsDiv.appendChild(div);
+        }
+    } catch {
+        resultsDiv.textContent = "Search failed.";
+    }
+}
+</script>
+
+</body>
+</html>
